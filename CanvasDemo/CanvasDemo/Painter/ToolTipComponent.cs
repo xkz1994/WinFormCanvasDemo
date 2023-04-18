@@ -7,53 +7,48 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace CanvasDemo.Painter
+namespace CanvasDemo.Painter;
+
+public class ToolTipComponent : IToolTip
 {
-    public class ToolTipComponent : IToolTip
+    TimCanvas Canvas;
+
+    public ToolTipComponent(TimCanvas canvas)
     {
-        TimCanvas Canvas;
+        Canvas = canvas;
+    }
 
-        public ToolTipComponent(TimCanvas canvas)
+    public void Drawing(Graphics g)
+    {
+    }
+
+    public void DrawingAfter(Graphics g)
+    {
+    }
+
+    public void Hide()
+    {
+        if (LastCube != null)
         {
-            Canvas = canvas;
+            LastCube.IsHover = false;
+            LastCube = null;
+            Canvas.Refresh();
         }
+    }
 
-        public void Drawing(Graphics g)
+    CubeElement LastCube;
+
+    public void Show(IToolTipElement element)
+    {
+        if (element is CubeElement cube && LastCube != cube)
         {
-
-        }
-
-        public void DrawingAfter(Graphics g)
-        {
-
-        }
-
-        public void Hide()
-        {
-            if (LastCube != null)
-            {
-                LastCube.IsHover = false;
-                LastCube = null;
-                Canvas.Refresh();
-            }
-        }
-
-        CubeElement LastCube;
-
-        public void Show(IToolTipElement element)
-        {
-            if (element is CubeElement cube && LastCube != cube)
-            {
-                if (LastCube != null) LastCube.IsHover = false;
+            if (LastCube != null) LastCube.IsHover = false;
 
 
-                LastCube = cube;
-                LastCube.IsHover = true;
+            LastCube = cube;
+            LastCube.IsHover = true;
 
-                Canvas.Refresh();
-            }
-
-
+            Canvas.Refresh();
         }
     }
 }

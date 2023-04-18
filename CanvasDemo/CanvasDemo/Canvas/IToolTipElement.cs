@@ -6,25 +6,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CanvasDemo.Canvas
+namespace CanvasDemo.Canvas;
+
+public interface IToolTipElement
 {
-    public interface IToolTipElement
-    {
-        /// <summary>
-        /// 获得提示的内容
-        /// </summary>
-        /// <returns></returns>
-        string GetToolTipTitle();
-    }
+    /// <summary>
+    /// 获得提示的内容
+    /// </summary>
+    /// <returns></returns>
+    string GetToolTipTitle();
+}
 
-    public interface IToolTip
-    {
-        void Show(IToolTipElement element);
+public interface IToolTip
+{
+    void Show(IToolTipElement element);
 
-        void Hide();
+    void Hide();
 
-        void Drawing(Graphics g);
+    void Drawing(Graphics g);
 
-        void DrawingAfter(Graphics g);
-    }
+    void DrawingAfter(Graphics g);
 }

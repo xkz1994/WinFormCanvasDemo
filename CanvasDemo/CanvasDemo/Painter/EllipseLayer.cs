@@ -6,27 +6,25 @@ using System.Threading.Tasks;
 using System.Drawing;
 using CanvasDemo.Canvas;
 
-namespace CanvasDemo.Painter
+namespace CanvasDemo.Painter;
+
+public class EllipseLayer : Layer
 {
-    public class EllipseLayer : Layer
+    public EllipseLayer(TimCanvas canvas) : base(canvas, "Cube")
     {
-        public EllipseLayer(TimCanvas canvas) : base(canvas, "Cube")
-        {
-            IsInteractionLayer = true;
-        }
+        IsInteractionLayer = true;
+    }
 
-        public override void Drawing(Graphics g)
+    public override void Drawing(Graphics g)
+    {
+        foreach (var item in Elements)
         {
-            foreach (var item in Elements)
-            {
-                if (Canvas.Viewer.IsInZone(item) == false) continue;
-                item.Drawing(g);
-            }
+            if (Canvas.Viewer.IsInZone(item) == false) continue;
+            item.Drawing(g);
         }
+    }
 
-        public override void DrawingAfter(Graphics g)
-        {
-     
-        }
+    public override void DrawingAfter(Graphics g)
+    {
     }
 }
