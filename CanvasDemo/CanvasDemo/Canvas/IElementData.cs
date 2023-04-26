@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CanvasDemo.Canvas;
+﻿namespace CanvasDemo.Canvas;
 
 /// <summary>
 /// 每个对象的身份
