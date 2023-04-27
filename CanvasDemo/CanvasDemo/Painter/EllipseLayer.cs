@@ -14,7 +14,7 @@ public class EllipseLayer : Layer
     {
         foreach (var item in Elements)
         {
-            if (Canvas.Viewer.IsInZone(item) == false) continue;
+            if (Canvas.Viewer.InZone(item) == false) continue;
             item.Drawing(g);
         }
     }

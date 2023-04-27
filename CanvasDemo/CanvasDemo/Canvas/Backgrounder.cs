@@ -7,7 +7,7 @@ namespace CanvasDemo.Canvas;
 /// </summary>
 public class Backgrounder
 {
-    private readonly Pen _zeroLinePen = new Pen(new SolidBrush(Color.Black), 2);
+    private readonly Pen _zeroLinePen = new(new SolidBrush(Color.Black), 2);
 
     private readonly TimCanvas _canvas1;
 
@@ -25,7 +25,7 @@ public class Backgrounder
         var vP1 = new Point(0, v.Y);
         var vP2 = new Point(0, v.Y + v.Height);
         g.DrawLine(_zeroLinePen, _canvas1.Viewer.LocalToShow(vP1), _canvas1.Viewer.LocalToShow(vP2));
-        
+
         var hP1 = new Point(v.Left, 0);
         var hP2 = new Point(v.Left + v.Width, 0);
         g.DrawLine(_zeroLinePen, _canvas1.Viewer.LocalToShow(hP1), _canvas1.Viewer.LocalToShow(hP2));

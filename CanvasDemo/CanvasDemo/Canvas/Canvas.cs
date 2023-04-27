@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CanvasDemo.Canvas;
 
 public delegate void LayerChangedEvent(Layer layer);
 
-public class TimCanvas : Control, IDisposable
+public sealed class TimCanvas : Control, IDisposable
 {
     public event LayerChangedEvent LayerChanged;
 
@@ -72,7 +69,7 @@ public class TimCanvas : Control, IDisposable
     }
 
 
-    public virtual void Initialize()
+    public void Initialize()
     {
         Viewer = new Viewer(this);
         Backgrounder = new Backgrounder(this);
@@ -216,7 +213,7 @@ public class TimCanvas : Control, IDisposable
 
     #region 交互操作
 
-    protected FocusElement FocusElement = null;
+    private FocusElement FocusElement = null;
 
     /// <summary>
     /// 设置焦点对象
