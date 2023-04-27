@@ -4,7 +4,7 @@ namespace CanvasDemo.Data;
 
 public class ElementData : IElementData
 {
-    public string ID { get; set; }
+    public string Id { get; set; }
 
     public int Group { get; set; }
 

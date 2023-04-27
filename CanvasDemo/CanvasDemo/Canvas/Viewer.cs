@@ -26,7 +26,7 @@ public class Viewer
     public float Zoom = 1;
 
     /// <summary>
-    /// 控件
+    /// 画布控件
     /// </summary>
     private readonly TimCanvas _canvas;
 
@@ -53,7 +53,7 @@ public class Viewer
     /// <summary>
     /// 构造函数
     /// </summary>
-    /// <param name="canvas">控件</param>
+    /// <param name="canvas">画布控件</param>
     public Viewer(TimCanvas canvas)
     {
         _canvas = canvas;

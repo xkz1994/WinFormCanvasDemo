@@ -27,9 +27,15 @@ public sealed class TimCanvas : Control, IDisposable
     /// </summary>
     public Backgrounder Backgrounder { get; set; }
 
-    public Size BackgrounderSize; //背景图大小，也就是画布大小
+    /// <summary>
+    /// 背景图大小，也就是画布大小
+    /// </summary>
+    public Size BackgrounderSize;
 
-    public List<Layer> Layers = new List<Layer>();
+    /// <summary>
+    /// 图层列表
+    /// </summary>
+    public readonly List<Layer> LayerList = new();
 
     /// <summary>
     /// 当前图层
@@ -61,9 +67,8 @@ public sealed class TimCanvas : Control, IDisposable
         SetStyle(ControlStyles.UserPaint, true);
         SetStyle(ControlStyles.AllPaintingInWmPaint, true);
         SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
-        this.DoubleBuffered = true;
-
-        this.AllowDrop = true;
+        DoubleBuffered = true;
+        AllowDrop = true;
 
         InitialToolTip();
     }
@@ -79,27 +84,30 @@ public sealed class TimCanvas : Control, IDisposable
 
 
         //增加事件
-        this.Paint += DrawingBoard_Paint;
-        this.MouseMove += DrawingBoard_MouseMove;
-        this.MouseDown += Canvas_MouseDown;
-        this.MouseUp += Canvas_MouseUp;
-        this.MouseWheel += Canvas_MouseWheel;
-        this.MouseDoubleClick += TimCanvas_MouseDoubleClick;
+        Paint += DrawingBoard_Paint;
+        MouseMove += DrawingBoard_MouseMove;
+        MouseDown += Canvas_MouseDown;
+        MouseUp += Canvas_MouseUp;
+        MouseWheel += Canvas_MouseWheel;
+        MouseDoubleClick += TimCanvas_MouseDoubleClick;
 
         //监视根窗体的激活状态
         var rootForm = FindForm();
-        rootForm.Activated += (s, e) => IsRootFormActivated = true;
-        rootForm.Deactivate += (s, e) => IsRootFormActivated = false;
+        rootForm!.Activated += (s, e) => IsRootFormActivated = true;
+        rootForm!.Deactivate += (s, e) => IsRootFormActivated = false;
     }
 
 
     #region 鼠标事件调用
 
+    /// <summary>
+    /// 鼠标按下
+    /// </summary>
     private void Canvas_MouseDown(object sender, MouseEventArgs e)
     {
-        this.Focus();
+        Focus();
         var l = CurrentLayer?.MouseDown(e);
-        if (l != true) //优先处理图层的鼠标操作，有些操作需要屏蔽
+        if (l == false ) //优先处理图层的鼠标操作，有些操作需要屏蔽
         {
             Viewer.MouseDown(e);
             ElementEditor.MouseDown(e);
@@ -164,13 +172,13 @@ public sealed class TimCanvas : Control, IDisposable
         Backgrounder.Drawing(e.Graphics);
 
         //绘制各图层信息-正常内容
-        foreach (var item in Layers)
+        foreach (var item in LayerList)
         {
             if (item.IsVisible == true) item.Drawing(e.Graphics);
         }
 
         //绘制各图层信息-顶部内容
-        foreach (var item in Layers)
+        foreach (var item in LayerList)
         {
             if (item.IsVisible == true) item.DrawingAfter(e.Graphics);
         }
@@ -198,7 +206,7 @@ public sealed class TimCanvas : Control, IDisposable
 
     public T GetLayer<T>(string name) where T : class
     {
-        return Layers.FirstOrDefault(x => x.Name == name) as T;
+        return LayerList.FirstOrDefault(x => x.Name == name) as T;
     }
 
     #region 拖拽支持
@@ -222,10 +230,10 @@ public sealed class TimCanvas : Control, IDisposable
     /// <param name="layoutName"></param>
     public void SetElementFocus(string id, string layoutName)
     {
-        var layout = Layers.FirstOrDefault(x => x.Name == layoutName);
+        var layout = LayerList.FirstOrDefault(x => x.Name == layoutName);
         if (layout == null) return;
 
-        var elem = layout.Elements.FirstOrDefault(x => x.ID == id);
+        var elem = layout.Elements.FirstOrDefault(x => x.Id == id);
         if (elem == null) return;
 
         SetElementFocus(elem);
@@ -248,7 +256,7 @@ public sealed class TimCanvas : Control, IDisposable
 
     public void RemoveObjElement(string name, Action<ObjElement> ElemCallback = null)
     {
-        var layer = Layers.FirstOrDefault(x => x.Name == name);
+        var layer = LayerList.FirstOrDefault(x => x.Name == name);
         if (layer == null) return;
         if (ElementEditor.SelectedElements.Count == 0) return;
         ElementEditor.SelectedElements.ForEach(x => { ElemCallback?.Invoke(x); });
@@ -261,7 +269,7 @@ public sealed class TimCanvas : Control, IDisposable
     public ObjElement GetElement(Point mousePoint)
     {
         var point = Viewer.MousePointToLocal(mousePoint);
-        foreach (var item in Layers)
+        foreach (var item in LayerList)
         {
             if (item.IsActive == false) continue; //TODO:此处可以进行优化,只对显示的对象进行检索提高效率
             var elm = item.Elements.FirstOrDefault(x => x.Rect.Contains(point) == true);
@@ -280,7 +288,7 @@ public sealed class TimCanvas : Control, IDisposable
     public ObjElement GetVisibleElement(Point mousePoint)
     {
         var point = Viewer.MousePointToLocal(mousePoint);
-        foreach (var item in Layers)
+        foreach (var item in LayerList)
         {
             //没有显示的和非交互图层就不能被获得对象
             if (item.IsVisible == false || item.IsInteractionLayer == false) continue; //TODO:此处可以进行优化,只对显示的对象进行检索提高效率
@@ -304,8 +312,8 @@ public sealed class TimCanvas : Control, IDisposable
     /// <param name="name"></param>
     public void SetCurrentLayer(string name)
     {
-        Layers.ForEach(x => x.IsActive = false);
-        var layer = Layers.FirstOrDefault(x => x.Name == name);
+        LayerList.ForEach(x => x.IsActive = false);
+        var layer = LayerList.FirstOrDefault(x => x.Name == name);
         SetCurrentLayer(layer);
     }
 
@@ -328,7 +336,7 @@ public sealed class TimCanvas : Control, IDisposable
     /// <returns></returns>
     public bool SetLayerDisplay(string name)
     {
-        var layer = Layers.FirstOrDefault(x => x.Name == name);
+        var layer = LayerList.FirstOrDefault(x => x.Name == name);
         return SetLayerDisplay(layer);
     }
 
@@ -348,7 +356,7 @@ public sealed class TimCanvas : Control, IDisposable
     /// <returns></returns>
     public bool SetLayerHidden(string name)
     {
-        var layer = Layers.FirstOrDefault(x => x.Name == name);
+        var layer = LayerList.FirstOrDefault(x => x.Name == name);
         return SetLayerHidden(layer);
     }
 
@@ -407,9 +415,9 @@ public sealed class TimCanvas : Control, IDisposable
 
         ElementEditor?.SelectedElements?.Clear();
 
-        Layers?.ForEach(x => { x.Elements.Clear(); });
+        LayerList?.ForEach(x => { x.Elements.Clear(); });
 
-        Layers?.Clear();
+        LayerList?.Clear();
 
         ToolTipTimer?.Stop();
         ToolTipTimer?.Dispose();

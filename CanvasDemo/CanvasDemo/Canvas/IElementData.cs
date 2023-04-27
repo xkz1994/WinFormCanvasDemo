@@ -6,7 +6,7 @@
 public interface IElementData
 {
     /// <summary>
-    /// 编号
+    /// 元素唯一标识ID编号
     /// </summary>
-    string ID { get; set; }
+    string Id { get; set; }
 }

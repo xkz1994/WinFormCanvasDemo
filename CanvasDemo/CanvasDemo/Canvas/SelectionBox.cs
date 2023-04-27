@@ -109,7 +109,7 @@ public class SelectionBox : Element
         }
 
         var point = Viewer.MousePointToLocal(mousePoint);
-        foreach (var item in Canvas.Layers)
+        foreach (var item in Canvas.LayerList)
         {
             if (item.IsActive == false) continue;
             var elm = item.Elements.FirstOrDefault(x => x.Rect.Contains(point) == true);
@@ -133,7 +133,7 @@ public class SelectionBox : Element
             Editor.ClearSelected();
         }
 
-        foreach (var item in Canvas.Layers)
+        foreach (var item in Canvas.LayerList)
         {
             if (item.IsActive == false) continue;
 

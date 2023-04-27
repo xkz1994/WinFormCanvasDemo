@@ -6,16 +6,25 @@ namespace CanvasDemo.Canvas;
 
 public abstract class Layer
 {
+    /// <summary>
+    /// 名称
+    /// </summary>
     public string Name { get; set; }
 
+    /// <summary>
+    /// 画布控件
+    /// </summary>
     public TimCanvas Canvas { get; set; }
 
-    public List<ObjElement> Elements { get; set; } = new List<ObjElement>();
+    /// <summary>
+    /// 所有元素
+    /// </summary>
+    public List<ObjElement> Elements { get; set; } = new();
 
     /// <summary>
-    /// 是否被激活，只有激活状态的图层上的对象才能被选择
+    /// 是否被激活，只有激活状态的图层上的对象才能被选择 默认false
     /// </summary>
-    public bool IsActive { get; set; } = false;
+    public bool IsActive { get; set; }
 
     /// <summary>
     /// 图层是否可见，但图层多的时候便于操作
@@ -23,15 +32,20 @@ public abstract class Layer
     public bool IsVisible { get; set; } = true;
 
     /// <summary>
-    /// 是否是互动图层，就是用于交互操作的图层，通常用于放置对象，与他对应的就是辅助图层，用于显示辅助内容，没有交互操作
+    /// 是否是互动图层，就是用于交互操作的图层，通常用于放置对象，与他对应的就是辅助图层，用于显示辅助内容，没有交互操作 默认false
     /// </summary>
-    public bool IsInteractionLayer { get; set; } = false;
+    public bool IsInteractionLayer { get; set; }
 
-    public Layer(TimCanvas canvas, string name)
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    /// <param name="canvas">控件</param>
+    /// <param name="name">名称</param>
+    protected Layer(TimCanvas canvas, string name)
     {
         Canvas = canvas;
         Name = name;
-        Canvas.Layers.Add(this);
+        Canvas.LayerList.Add(this);
     }
 
     /// <summary>

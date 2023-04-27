@@ -208,7 +208,7 @@ public class ElementEditor : Element
         foreach (var item in SelectedElements)
         {
             item.Layer.Elements.Remove(item);
-            DeletedElems.Add(item.ID, item);
+            DeletedElems.Add(item.Id, item);
         }
 
         ClearSelected();

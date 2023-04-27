@@ -42,7 +42,7 @@ public partial class Form1 : Form
             {
                 var cubeData = new ElementData()
                 {
-                    ID = Guid.NewGuid().ToString(),
+                    Id = Guid.NewGuid().ToString(),
                     Group = r.Next(20),
                     Title = "E-" + (x + y * 100).ToString(),
                 };
@@ -62,7 +62,7 @@ public partial class Form1 : Form
             {
                 var cubeData = new ElementData()
                 {
-                    ID = Guid.NewGuid().ToString(),
+                    Id = Guid.NewGuid().ToString(),
                     Group = r.Next(20),
                     Title = (x + y * 200).ToString(),
                 };
