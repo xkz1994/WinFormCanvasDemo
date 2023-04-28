@@ -3,13 +3,18 @@ using System.Drawing;
 
 namespace CanvasDemo.Painter;
 
+/// <summary>
+/// 鼠标指针悬停
+/// </summary>
 public class ToolTipComponent : IToolTip
 {
-    TimCanvas Canvas;
+    private readonly TimCanvas _canvas;
+
+    private CubeElement _lastCube;
 
     public ToolTipComponent(TimCanvas canvas)
     {
-        Canvas = canvas;
+        _canvas = canvas;
     }
 
     public void Drawing(Graphics g)
@@ -20,29 +25,31 @@ public class ToolTipComponent : IToolTip
     {
     }
 
+    /// <summary>
+    /// 隐藏鼠标悬停
+    /// </summary>
     public void Hide()
     {
-        if (LastCube != null)
-        {
-            LastCube.IsHover = false;
-            LastCube = null;
-            Canvas.Refresh();
-        }
+        if (_lastCube == null) return;
+
+        _lastCube.IsHover = false;
+        _lastCube = null;
+        _canvas.Refresh();
     }
 
-    CubeElement LastCube;
 
+    /// <summary>
+    /// 开启鼠标悬停
+    /// </summary>
     public void Show(IToolTipElement element)
     {
-        if (element is CubeElement cube && LastCube != cube)
-        {
-            if (LastCube != null) LastCube.IsHover = false;
+        if (element is not CubeElement cube || _lastCube == cube) return;
 
+        if (_lastCube != null) _lastCube.IsHover = false;
 
-            LastCube = cube;
-            LastCube.IsHover = true;
+        _lastCube = cube;
+        _lastCube.IsHover = true;
 
-            Canvas.Refresh();
-        }
+        _canvas.Refresh();
     }
 }

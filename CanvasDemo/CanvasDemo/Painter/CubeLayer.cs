@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Linq;
 using CanvasDemo.Canvas;
 
 namespace CanvasDemo.Painter;
@@ -12,9 +13,8 @@ public class CubeLayer : Layer
 
     public override void Drawing(Graphics g)
     {
-        foreach (var item in Elements)
+        foreach (var item in Elements.Where(item => Canvas.Viewer.InZone(item)))
         {
-            if (Canvas.Viewer.InZone(item) == false) continue;
             item.Drawing(g);
         }
     }

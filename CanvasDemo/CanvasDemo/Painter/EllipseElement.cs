@@ -4,18 +4,22 @@ using System.Drawing;
 
 namespace CanvasDemo.Painter;
 
+/// <summary>
+/// 园形元素
+/// </summary>
 public class EllipseElement : ObjElement<ElementData>
 {
+    public static readonly Brush FillBrush = new SolidBrush(Color.Green);
+
     public EllipseElement(EllipseLayer layer, ElementData data, int sideLength) : base(layer, data)
     {
-        this.Rect.Width = sideLength;
-        this.Rect.Height = sideLength;
+        Rect.Width = sideLength;
+        Rect.Height = sideLength;
     }
-
-    public static Brush FillBrush = new SolidBrush(Color.Green);
 
     public override void Drawing(Graphics g)
     {
+        // 画实心圆
         g.FillEllipse(FillBrush, Viewer.LocalToShow(Rect));
     }
 

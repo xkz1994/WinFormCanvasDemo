@@ -4,20 +4,31 @@ using System.Drawing;
 
 namespace CanvasDemo.Painter;
 
+/// <summary>
+/// 方形元素
+/// </summary>
 public class CubeElement : ObjElement<ElementData>, IToolTipElement
 {
+    public static readonly Brush FillBrush = new SolidBrush(Color.Blue);
+    public static readonly Brush SelectBrush = new SolidBrush(Color.Green);
+    public static readonly Brush ErrorBrush = new SolidBrush(Color.Red);
+
+    protected static readonly StringFormat SfAlignment = new()
+    {
+        Alignment = StringAlignment.Center,
+        LineAlignment = StringAlignment.Center,
+    };
+
     public CubeElement(CubeLayer layer, ElementData data, int sideLength) : base(layer, data)
     {
-        this.Rect.Width = sideLength;
-        this.Rect.Height = sideLength;
+        Rect.Width = sideLength;
+        Rect.Height = sideLength;
     }
 
-    public bool IsHover { get; set; } = false;
-
-    public static Brush FillBrush = new SolidBrush(Color.Blue);
-    public static Brush SelectBrush = new SolidBrush(Color.Green);
-
-    public static Brush ErrorBrush = new SolidBrush(Color.Red);
+    /// <summary>
+    /// 鼠标指针是否悬停
+    /// </summary>
+    public bool IsHover { get; set; }
 
 
     public override void Drawing(Graphics g)
@@ -31,43 +42,50 @@ public class CubeElement : ObjElement<ElementData>, IToolTipElement
         else if (IsSelected)
             fillBrush = SelectBrush;
 
-        if (titleH * Viewer.Zoom > 10) //如果标题大于10就认真绘制，如哦小于那么就简化
+        switch (titleH * Viewer.Zoom)
         {
-            var borderW = (int)(Rect.Height * 0.01 * Viewer.Zoom) + 1;
-
-            g.FillRectangle(Brushes.White, Viewer.LocalToShow(Rect.X, Rect.Y, Rect.Width, titleH + 1));
-            var fontSize = (int)(titleH / 2 * Viewer.Zoom) + 1;
-            if (fontSize >= 3)
+            //如果标题大于10就认真绘制，如哦小于那么就简化
+            // ReSharper disable PossibleLossOfFraction
+            case > 10:
             {
-                g.DrawString(Data.Title.ToString(), new Font("微软雅黑", fontSize > 60 ? 60 : fontSize), Brushes.Black,
-                    Viewer.LocalToShow(Rect.X + (int)(borderW / Viewer.Zoom), Rect.Y + (int)(borderW / Viewer.Zoom), Rect.Width, Rect.Height));
+                var borderW = (int)(Rect.Height * 0.01 * Viewer.Zoom) + 1;
+
+                g.FillRectangle(Brushes.White, Viewer.LocalToShow(Rect.X, Rect.Y, Rect.Width, titleH + 1));
+
+                var fontSize = (int)(titleH / 2 * Viewer.Zoom) + 1;
+                if (fontSize >= 3)
+                {
+                    g.DrawString(Data.Title, new Font("微软雅黑", fontSize > 60 ? 60 : fontSize), Brushes.Black,
+                        Viewer.LocalToShow(Rect.X + (int)(borderW / Viewer.Zoom), Rect.Y + (int)(borderW / Viewer.Zoom), Rect.Width, Rect.Height));
+                }
+
+                var contentRect = Viewer.LocalToShow(Rect.X, Rect.Y + titleH, Rect.Width, Rect.Height - titleH);
+                g.FillRectangle(fillBrush, contentRect);
+                g.DrawString(Data.Group.ToString(), new Font("微软雅黑", (Rect.Height - titleH) / 2 * Viewer.Zoom),
+                    Brushes.White, contentRect, SfAlignment);
+
+                g.DrawRectangle(IsHover
+                        ? new Pen(Brushes.Red, borderW * 2)
+                        : new Pen(Brushes.Black, borderW),
+                    Viewer.LocalToShow(Rect));
+                break;
             }
-
-            var contentRect = Viewer.LocalToShow(Rect.X, Rect.Y + titleH, Rect.Width, Rect.Height - titleH);
-            g.FillRectangle(fillBrush, contentRect);
-            g.DrawString(Data.Group.ToString(), new Font("微软雅黑", (Rect.Height - titleH) / 2 * Viewer.Zoom),
-                Brushes.White, contentRect, SFAlignment);
-
-
-            if (IsHover)
-                g.DrawRectangle(new Pen(Brushes.Red, borderW * 2), Viewer.LocalToShow(Rect));
-            else
-                g.DrawRectangle(new Pen(Brushes.Black, borderW), Viewer.LocalToShow(Rect));
-        }
-        else if (titleH * Viewer.Zoom > 5)
-        {
-            g.FillRectangle(fillBrush, Viewer.LocalToShow(Rect));
-
-            var fontSize = (int)(titleH * Viewer.Zoom) + 1;
-            if (fontSize >= 3)
+            case > 5:
             {
-                g.DrawString(Data.Group.ToString(), new Font("微软雅黑", fontSize > 60 ? 60 : fontSize), Brushes.White, Viewer.LocalToShow(Rect.X + 1, Rect.Y + 1, Rect.Width, Rect.Height),
-                    SFAlignment);
+                g.FillRectangle(fillBrush, Viewer.LocalToShow(Rect));
+
+                var fontSize = (int)(titleH * Viewer.Zoom) + 1;
+                if (fontSize >= 3)
+                {
+                    g.DrawString(Data.Group.ToString(), new Font("微软雅黑", fontSize > 60 ? 60 : fontSize), Brushes.White, Viewer.LocalToShow(Rect.X + 1, Rect.Y + 1, Rect.Width, Rect.Height),
+                        SfAlignment);
+                }
+
+                break;
             }
-        }
-        else
-        {
-            g.FillRectangle(fillBrush, Viewer.LocalToShow(Rect));
+            default:
+                g.FillRectangle(fillBrush, Viewer.LocalToShow(Rect));
+                break;
         }
     }
 
@@ -79,10 +97,4 @@ public class CubeElement : ObjElement<ElementData>, IToolTipElement
     {
         return $"[{Data.Group}] {Data.Title}";
     }
-
-    protected static StringFormat SFAlignment = new StringFormat()
-    {
-        Alignment = StringAlignment.Center,
-        LineAlignment = StringAlignment.Center,
-    };
 }
