@@ -7,15 +7,24 @@ using System.Windows.Forms;
 namespace CanvasDemo.Canvas;
 
 /// <summary>
-/// 选择框对象
+/// 编辑的对象元素
+/// 选择绘制的原色
 /// </summary>
 public class ElementEditor : Element
 {
-    SelectionBox SelectionBox;
+    /// <summary>
+    /// 选择的对象集合
+    /// </summary>
+    public readonly List<ObjElement> SelectedElements = new();
+
+    /// <summary>
+    /// 选择的元素
+    /// </summary>
+    private readonly SelectionBox _selectionBox;
 
     public ElementEditor(TimCanvas canvas) : base(canvas, nameof(ElementEditor))
     {
-        SelectionBox = new SelectionBox(this, canvas);
+        _selectionBox = new SelectionBox(this, canvas);
     }
 
     public override void Drawing(Graphics g)
@@ -23,7 +32,7 @@ public class ElementEditor : Element
         //绘制选择对象的拖动柄
         SelectedElements.ForEach(x => x.DrawingJoystick(g));
 
-        SelectionBox.Drawing(g);
+        _selectionBox.Drawing(g);
     }
 
     public Point MPoint;
@@ -74,7 +83,7 @@ public class ElementEditor : Element
             else
             {
                 EState = EditorState.Selection;
-                SelectionBox.MouseDown(e);
+                _selectionBox.MouseDown(e);
             }
         }
     }
@@ -123,7 +132,7 @@ public class ElementEditor : Element
         else if (EState == EditorState.Selection)
         {
             //选择
-            SelectionBox.MouseMove(e);
+            _selectionBox.MouseMove(e);
         }
     }
 
@@ -131,7 +140,7 @@ public class ElementEditor : Element
     {
         if (EState == EditorState.Selection)
         {
-            SelectionBox.MouseUp(e);
+            _selectionBox.MouseUp(e);
         }
 
         EState = EditorState.None;
@@ -142,11 +151,6 @@ public class ElementEditor : Element
     }
 
     #region 对象选择操作
-
-    /// <summary>
-    /// 选择的对象集合
-    /// </summary>
-    public List<ObjElement> SelectedElements = new List<ObjElement>();
 
     /// <summary>
     /// 当前对象

@@ -13,8 +13,14 @@ public interface IToolTipElement
 
 public interface IToolTip
 {
+    /// <summary>
+    /// 开启鼠标悬停
+    /// </summary>
     void Show(IToolTipElement element);
 
+    /// <summary>
+    /// 隐藏鼠标悬停
+    /// </summary>
     void Hide();
 
     void Drawing(Graphics g);

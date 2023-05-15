@@ -3,37 +3,36 @@
 namespace CanvasDemo.Canvas;
 
 /// <summary>
-/// 绘制十字焦点
+/// 绘制十字焦点元素
+/// 定位绘制的元素
 /// </summary>
 public class FocusElement : Element
 {
-    public bool IsShow { get; set; } = false;
+    /// <summary>
+    /// 是否展示
+    /// </summary>
+    public bool IsShow { get; set; }
+
+    /// <summary>
+    /// 焦点坐标
+    /// </summary>
     public Point Focus { get; private set; }
-
-    //public Point H1, H2;
-
-    //public Point V1, V2;
 
     public void SetFocus(Point focus)
     {
         Focus = focus;
-        //H1 = new Point(focus.X, 0);
-        //H2 = new Point(focus.X, this.Canvas.Height);
-
-        //V1 = new Point(0, focus.Y);
-        //V2 = new Point(this.Canvas.Width, focus.Y);
     }
 
-    public FocusElement(Canvas.TimCanvas canvas) : base(canvas, nameof(FocusElement))
+    public FocusElement(TimCanvas canvas) : base(canvas, nameof(FocusElement))
     {
     }
 
     public override void Drawing(Graphics g)
     {
-        var focus = this.Canvas.Viewer.LocalToShow(Focus);
+        var focus = Canvas.Viewer.LocalToShow(Focus);
 
-        g.DrawLine(Pens.Black, new Point(focus.X, 0), new Point(focus.X, this.Canvas.Height));
-        g.DrawLine(Pens.Black, new Point(0, focus.Y), new Point(this.Canvas.Width, focus.Y));
+        g.DrawLine(Pens.Black, focus with { Y = 0 }, focus with { Y = Canvas.Height });
+        g.DrawLine(Pens.Black, focus with { X = 0 }, focus with { X = Canvas.Width });
     }
 
     public override void DrawingAfter(Graphics g)

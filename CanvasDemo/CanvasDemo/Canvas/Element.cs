@@ -15,7 +15,7 @@ public abstract class Element
     public string Id { get; set; }
 
     /// <summary>
-    /// 当前对象的区域范围
+    /// 当前对象的区域范围, 用来绘制的矩形区域
     /// 不能用属性，因为属性不能给修改内部值
     /// </summary>
     public Rectangle Rect;

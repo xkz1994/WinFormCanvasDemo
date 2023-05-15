@@ -109,7 +109,7 @@ public class Viewer
     }
 
     /// <summary>
-    /// 鼠标移动事件
+    /// 鼠标滚轮事件
     /// </summary>
     /// <param name="e">鼠标事件参数</param>
     public void MouseWheel(MouseEventArgs e)
