@@ -8,7 +8,7 @@ namespace CanvasDemo.Canvas;
 
 /// <summary>
 /// 编辑的对象元素
-/// 选择绘制的原色
+/// 选择绘制的元素
 /// </summary>
 public class ElementEditor : Element
 {
@@ -18,7 +18,22 @@ public class ElementEditor : Element
     public readonly List<ObjElement> SelectedElements = new();
 
     /// <summary>
-    /// 选择的元素
+    /// 放大或者移动的起始点
+    /// </summary>
+    public Point MPoint;
+
+    /// <summary>
+    /// 对象状态
+    /// </summary>
+    private EditorState _editorState = EditorState.None;
+
+    /// <summary>
+    /// 拖动柄状态
+    /// </summary>
+    private TransformState _transformState = TransformState.None;
+
+    /// <summary>
+    /// 鼠标选择元素框元素
     /// </summary>
     private readonly SelectionBox _selectionBox;
 
@@ -35,115 +50,105 @@ public class ElementEditor : Element
         _selectionBox.Drawing(g);
     }
 
-    public Point MPoint;
-
-    //对象状态
-    private EditorState EState = EditorState.None;
-
-    //拖动柄状态
-    private TransformState TState = TransformState.None;
 
     public void MouseDown(MouseEventArgs e)
     {
-        if (e.Button == MouseButtons.Left)
-        {
-            MPoint = Viewer.MousePointToLocal(e.Location);
-            var elem = SelectedElements.FirstOrDefault(x => x.Rect.Contains(MPoint) == true);
-            if (elem != null)
-            {
-                //点击已经选择的对象
-                SetCurrent(elem); //设定当前点的对象为操作对象
+        if (e.Button != MouseButtons.Left) return;
 
-                if (Canvas.IsLocked == false)
-                {
-                    //如果是只读，那么就不要进入移动和调整大小模式
-                    if (MPoint.X > elem.Rect.Right - elem.JoystickSize && MPoint.Y > elem.Rect.Bottom - elem.JoystickSize && MPoint.X < elem.Rect.Right && MPoint.Y < elem.Rect.Bottom)
-                    {
-                        EState = EditorState.Transform;
-                        TState = TransformState.RightBottom;
-                    }
-                    else if (MPoint.X > elem.Rect.Right - elem.JoystickSize && MPoint.Y > elem.Rect.Y + elem.Rect.Height / 2 - elem.JoystickSize / 2 && MPoint.X < elem.Rect.Right &&
-                             MPoint.Y < elem.Rect.Y + elem.Rect.Height / 2 + elem.JoystickSize / 2)
-                    {
-                        EState = EditorState.Transform;
-                        TState = TransformState.Right;
-                    }
-                    else if (MPoint.X > elem.Rect.X + elem.Rect.Width / 2 - elem.JoystickSize / 2 && MPoint.Y > elem.Rect.Bottom - elem.JoystickSize &&
-                             MPoint.X < elem.Rect.X + elem.Rect.Width / 2 + elem.JoystickSize / 2 && MPoint.Y < elem.Rect.Bottom)
-                    {
-                        EState = EditorState.Transform;
-                        TState = TransformState.Bottom;
-                    }
-                    else
-                    {
-                        EState = EditorState.Move;
-                    }
-                }
+        MPoint = Viewer.MousePointToLocal(e.Location);
+        var elem = SelectedElements.FirstOrDefault(x => x.Rect.Contains(MPoint));
+        if (elem != null)
+        {
+            //点击已经选择的对象
+            SetCurrent(elem); //设定当前点的对象为操作对象
+
+            //如果是只读，那么就不要进入移动和调整大小模式
+            if (Canvas.IsLocked) return;
+
+            if (MPoint.X > elem.Rect.Right - elem.JoystickSize && MPoint.Y > elem.Rect.Bottom - elem.JoystickSize && MPoint.X < elem.Rect.Right && MPoint.Y < elem.Rect.Bottom)
+            {
+                _editorState = EditorState.Transform;
+                _transformState = TransformState.RightBottom;
+            }
+            else if (MPoint.X > elem.Rect.Right - elem.JoystickSize && MPoint.Y > elem.Rect.Y + elem.Rect.Height / 2 - elem.JoystickSize / 2 && MPoint.X < elem.Rect.Right &&
+                     MPoint.Y < elem.Rect.Y + elem.Rect.Height / 2 + elem.JoystickSize / 2)
+            {
+                _editorState = EditorState.Transform;
+                _transformState = TransformState.Right;
+            }
+            else if (MPoint.X > elem.Rect.X + elem.Rect.Width / 2 - elem.JoystickSize / 2 && MPoint.Y > elem.Rect.Bottom - elem.JoystickSize &&
+                     MPoint.X < elem.Rect.X + elem.Rect.Width / 2 + elem.JoystickSize / 2 && MPoint.Y < elem.Rect.Bottom)
+            {
+                _editorState = EditorState.Transform;
+                _transformState = TransformState.Bottom;
             }
             else
             {
-                EState = EditorState.Selection;
-                _selectionBox.MouseDown(e);
+                _editorState = EditorState.Move;
             }
+        }
+        else
+        {
+            _editorState = EditorState.Selection;
+            _selectionBox.MouseDown(e);
         }
     }
 
     public void MouseMove(MouseEventArgs e)
     {
-        if (EState == EditorState.Move)
+        switch (_editorState)
         {
-            //移动模式，设定对象位置
-            var end = Viewer.MousePointToLocal(e.Location);
-            var x = (end.X - MPoint.X);
-            var y = (end.Y - MPoint.Y);
+            case EditorState.Move: //移动模式，设定对象位置
+                var endMove = Viewer.MousePointToLocal(e.Location);
+                var xMove = endMove.X - MPoint.X;
+                var yMove = endMove.Y - MPoint.Y;
 
-            SelectedElements.ForEach(elem => elem.Rect.Offset(x, y));
-            MPoint = end;
-        }
-        else if (EState == EditorState.Transform)
-        {
-            //调整大小
-            var end = Viewer.MousePointToLocal(e.Location);
-            var x = (end.X - MPoint.X);
-            var y = (end.Y - MPoint.Y);
+                SelectedElements.ForEach(elem => elem.Rect.Offset(xMove, yMove));
+                MPoint = endMove;
+                break;
 
-            SelectedElements.ForEach(elem =>
-            {
-                switch (TState)
+            case EditorState.Transform: //调整大小
+                var endTransform = Viewer.MousePointToLocal(e.Location);
+                var xTransform = endTransform.X - MPoint.X;
+                var yTransform = endTransform.Y - MPoint.Y;
+
+                SelectedElements.ForEach(elem =>
                 {
-                    case TransformState.RightBottom:
-                        elem.Rect.Width += x;
-                        elem.Rect.Height += y;
-                        break;
-                    case TransformState.Right:
-                        elem.Rect.Width += x;
-                        break;
-                    case TransformState.Bottom:
-                        elem.Rect.Height += y;
-                        break;
-                }
+                    switch (_transformState)
+                    {
+                        case TransformState.RightBottom:
+                            elem.Rect.Width += xTransform;
+                            elem.Rect.Height += yTransform;
+                            break;
+                        case TransformState.Right:
+                            elem.Rect.Width += xTransform;
+                            break;
+                        case TransformState.Bottom:
+                            elem.Rect.Height += yTransform;
+                            break;
+                    }
 
-                if (elem.Rect.Width < 10) elem.Rect.Width = 10;
-                if (elem.Rect.Height < 10) elem.Rect.Height = 10;
-            });
+                    if (elem.Rect.Width < 10) elem.Rect.Width = 10;
+                    if (elem.Rect.Height < 10) elem.Rect.Height = 10;
+                });
 
-            MPoint = end;
-        }
-        else if (EState == EditorState.Selection)
-        {
-            //选择
-            _selectionBox.MouseMove(e);
+                MPoint = endTransform;
+                break;
+            case EditorState.Selection:
+                //选择
+                _selectionBox.MouseMove(e);
+                break;
         }
     }
 
     public void MouseUp(MouseEventArgs e)
     {
-        if (EState == EditorState.Selection)
+        if (_editorState == EditorState.Selection)
         {
             _selectionBox.MouseUp(e);
         }
 
-        EState = EditorState.None;
+        _editorState = EditorState.None;
     }
 
     public void MouseWheel(MouseEventArgs e)
@@ -421,18 +426,48 @@ public class ElementEditor : Element
 
     enum EditorState
     {
-        None, //没有任何操作
-        Selection, //框选状态
-        Move, //移动状态
-        Transform, //调整大小状态
+        /// <summary>
+        /// 没有任何操作
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// 框选状态
+        /// </summary>
+        Selection,
+
+        /// <summary>
+        /// 移动状态
+        /// </summary>
+        Move,
+
+        /// <summary>
+        /// 调整大小状态
+        /// </summary>
+        Transform
     }
 
 
     enum TransformState
     {
+        /// <summary>
+        /// 没有任何操作
+        /// </summary>
         None,
+
+        /// <summary>
+        /// 鼠标zai操纵柄右下角
+        /// </summary>
         RightBottom,
+
+        /// <summary>
+        /// 鼠标再操纵柄右边
+        /// </summary>
         Right,
+
+        /// <summary>
+        /// 鼠标再操纵柄下边
+        /// </summary>
         Bottom,
     }
 }
