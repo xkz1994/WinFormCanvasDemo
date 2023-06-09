@@ -65,22 +65,63 @@ public class ElementEditor : Element
             //如果是只读，那么就不要进入移动和调整大小模式
             if (Canvas.IsLocked) return;
 
-            if (MPoint.X > elem.Rect.Right - elem.JoystickSize && MPoint.Y > elem.Rect.Bottom - elem.JoystickSize && MPoint.X < elem.Rect.Right && MPoint.Y < elem.Rect.Bottom)
+            var leftJoystickLeftBoardResult = MPoint.X > elem.Rect.X; // 左排锚点 左边界
+            var leftJoystickRightBoardResult = MPoint.X < elem.Rect.X + elem.JoystickSize; // 左排锚点 右边界
+
+            var rightJoystickLeftBoardResult = MPoint.X > elem.Rect.Right - elem.JoystickSize; // 右排锚点 左边界
+            var rightJoystickRightBoardResult = MPoint.X < elem.Rect.Right; // 右排锚点 右边界
+
+            var topJoystickTopBoardResult = MPoint.Y > elem.Rect.Top; // 上排锚点 上边界
+            var topJoystickBottomBoardResult = MPoint.Y < elem.Rect.Top + elem.JoystickSize; // 上排锚点 下边界
+
+            var bottomJoystickTopBoardResult = MPoint.Y > elem.Rect.Bottom - elem.JoystickSize; // 下排锚点 上边界
+            var bottomJoystickBottomBoardResult = MPoint.Y < elem.Rect.Bottom; // 下排锚点 下边界
+
+            var middleOfTopAndBottomJoystickTopBoardResult = MPoint.Y > elem.Rect.Y + elem.Rect.Height / 2 - elem.JoystickSize / 2; // 上下排中间的锚点 上边界
+            var middleOfTopAndBottomJoystickBottomBoardResult = MPoint.Y < elem.Rect.Y + elem.Rect.Height / 2 + elem.JoystickSize / 2; // 上下排中间的锚点 上边界
+
+            var middleOfLeftAndRightJoystickLeftBoardResult = MPoint.X > elem.Rect.X + elem.Rect.Width / 2 - elem.JoystickSize / 2; // 左右排中间的锚点 左边界
+            var middleOfLeftAndRightJoystickRightBoardResult = MPoint.X < elem.Rect.X + elem.Rect.Width / 2 + elem.JoystickSize / 2; // 左右排中间的锚点 右边界
+
+            if (leftJoystickLeftBoardResult && leftJoystickRightBoardResult && topJoystickTopBoardResult && topJoystickBottomBoardResult)
             {
                 _editorState = EditorState.Transform;
-                _transformState = TransformState.RightBottom;
+                _transformState = TransformState.LeftTop;
             }
-            else if (MPoint.X > elem.Rect.Right - elem.JoystickSize && MPoint.Y > elem.Rect.Y + elem.Rect.Height / 2 - elem.JoystickSize / 2 && MPoint.X < elem.Rect.Right &&
-                     MPoint.Y < elem.Rect.Y + elem.Rect.Height / 2 + elem.JoystickSize / 2)
+            else if (middleOfLeftAndRightJoystickLeftBoardResult && middleOfLeftAndRightJoystickRightBoardResult && topJoystickTopBoardResult && topJoystickBottomBoardResult)
+            {
+                _editorState = EditorState.Transform;
+                _transformState = TransformState.Top;
+            }
+            else if (rightJoystickLeftBoardResult && rightJoystickRightBoardResult && topJoystickTopBoardResult && topJoystickBottomBoardResult)
+            {
+                _editorState = EditorState.Transform;
+                _transformState = TransformState.RightTop;
+            }
+            else if (rightJoystickLeftBoardResult && rightJoystickRightBoardResult && middleOfTopAndBottomJoystickTopBoardResult && middleOfTopAndBottomJoystickBottomBoardResult)
             {
                 _editorState = EditorState.Transform;
                 _transformState = TransformState.Right;
             }
-            else if (MPoint.X > elem.Rect.X + elem.Rect.Width / 2 - elem.JoystickSize / 2 && MPoint.Y > elem.Rect.Bottom - elem.JoystickSize &&
-                     MPoint.X < elem.Rect.X + elem.Rect.Width / 2 + elem.JoystickSize / 2 && MPoint.Y < elem.Rect.Bottom)
+            else if (rightJoystickLeftBoardResult && rightJoystickRightBoardResult && bottomJoystickTopBoardResult && bottomJoystickBottomBoardResult)
+            {
+                _editorState = EditorState.Transform;
+                _transformState = TransformState.RightBottom;
+            }
+            else if (middleOfLeftAndRightJoystickLeftBoardResult && middleOfLeftAndRightJoystickRightBoardResult && bottomJoystickTopBoardResult && bottomJoystickBottomBoardResult)
             {
                 _editorState = EditorState.Transform;
                 _transformState = TransformState.Bottom;
+            }
+            else if (leftJoystickLeftBoardResult && leftJoystickRightBoardResult && bottomJoystickTopBoardResult && bottomJoystickBottomBoardResult)
+            {
+                _editorState = EditorState.Transform;
+                _transformState = TransformState.LeftBottom;
+            }
+            else if (leftJoystickLeftBoardResult && leftJoystickRightBoardResult && middleOfTopAndBottomJoystickTopBoardResult && middleOfTopAndBottomJoystickBottomBoardResult)
+            {
+                _editorState = EditorState.Transform;
+                _transformState = TransformState.Left;
             }
             else
             {
@@ -116,15 +157,46 @@ public class ElementEditor : Element
                 {
                     switch (_transformState)
                     {
+                        case TransformState.LeftTop: // X动 Y动
+                            elem.Rect.Width -= xTransform;
+                            elem.Rect.Height -= yTransform;
+                            elem.Rect.X += xTransform;
+                            elem.Rect.Y += yTransform;
+                            break;
+
+                        case TransformState.Top: // X不动 Y动
+                            elem.Rect.Height -= yTransform;
+                            elem.Rect.Y += yTransform;
+                            break;
+
+                        case TransformState.RightTop: // X不动 Y动
+                            elem.Rect.Width += xTransform;
+                            elem.Rect.Height -= yTransform;
+                            elem.Rect.Y += yTransform;
+                            break;
+
+                        case TransformState.Right:
+                            elem.Rect.Width += xTransform;
+                            break;
+
                         case TransformState.RightBottom:
                             elem.Rect.Width += xTransform;
                             elem.Rect.Height += yTransform;
                             break;
-                        case TransformState.Right:
-                            elem.Rect.Width += xTransform;
-                            break;
+
                         case TransformState.Bottom:
                             elem.Rect.Height += yTransform;
+                            break;
+
+                        case TransformState.LeftBottom: // X动 Y不动
+                            elem.Rect.Width -= xTransform;
+                            elem.Rect.Height += yTransform;
+                            elem.Rect.X += xTransform;
+                            break;
+
+                        case TransformState.Left: // X动 Y不动
+                            elem.Rect.Width -= xTransform;
+                            elem.Rect.X += xTransform;
                             break;
                     }
 
@@ -456,9 +528,19 @@ public class ElementEditor : Element
         None,
 
         /// <summary>
-        /// 鼠标zai操纵柄右下角
+        /// 鼠标再操纵柄左上角
         /// </summary>
-        RightBottom,
+        LeftTop,
+
+        /// <summary>
+        /// 鼠标再操纵柄上边
+        /// </summary>
+        Top,
+
+        /// <summary>
+        /// 鼠标在操纵柄右上角
+        /// </summary>
+        RightTop,
 
         /// <summary>
         /// 鼠标再操纵柄右边
@@ -466,8 +548,23 @@ public class ElementEditor : Element
         Right,
 
         /// <summary>
+        /// 鼠标zai操纵柄右下角
+        /// </summary>
+        RightBottom,
+
+        /// <summary>
         /// 鼠标再操纵柄下边
         /// </summary>
         Bottom,
+
+        /// <summary>
+        /// 鼠标再操纵柄左下角
+        /// </summary>
+        LeftBottom,
+
+        /// <summary>
+        /// 鼠标再操纵柄左边
+        /// </summary>
+        Left
     }
 }
